@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Petualangan Detektif Pengetahuan - Edu Mini Game</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;700;800&display=display');
+        
+        body {
+            font-family: 'Fredoka', 'Plus Jakarta Sans', sans-serif;
+            background-color: #fff0f6;
+            /* Cute Soft Polka-dot Background */
+            background-image: radial-gradient(#f472b6 2px, transparent 2px), radial-gradient(#f472b6 2px, #fff0f6 2px);
+            background-size: 28px 28px;
+            background-position: 0 0, 14px 14px;
+            color: #475569;
+            min-height: 100vh;
+            user-select: none;
+        }
+
+        /* Cute Pastel Candy Card Theme */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(14px);
+            border: 3px solid #fbcfe8;
+            box-shadow: 0 12px 30px -5px rgba(244, 114, 182, 0.2), 0 8px 12px -6px rgba(244, 114, 182, 0.1);
+        }
+
+        .lab-element {
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .lab-element:hover {
+            transform: translateY(-6px) scale(1.03);
+        }
+
+        .bounce-cute {
+            animation: bounceCute 2s infinite;
+        }
+
+        @keyframes bounceCute {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        .cute-btn {
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 4px 0 0 rgba(0, 0, 0, 0.08);
+        }
+        .cute-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 0 rgba(0, 0, 0, 0.08);
+        }
+
+        /* Custom Cute Scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #ffe4e6;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #f472b6;
+            border-radius: 20px;
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen justify-between p-3 md:p-6">
+
+    <!-- Modal Custom Alert Cute -->
+    <div id="custom-modal" class="fixed inset-0 bg-pink-900/30 backdrop-blur-md flex items-center justify-center p-4 z-50 hidden">
+        <div class="glass-card rounded-[32px] p-6 max-w-sm w-full text-center shadow-2xl border-4 border-pink-300">
+            <div id="modal-icon" class="text-5xl mb-2 bounce-cute">💖</div>
+            <h3 id="modal-title" class="text-xl font-bold text-pink-700 mb-2">Pemberitahuan Cute</h3>
+            <p id="modal-msg" class="text-xs text-slate-600 mb-5 leading-relaxed font-semibold"></p>
+            <button onclick="closeModal()" class="w-full py-3.5 bg-gradient-to-r from-pink-400 to-purple-400 hover:from-pink-500 hover:to-purple-500 text-white font-extrabold rounded-2xl text-xs transition shadow-lg shadow-pink-300/60 cute-btn">
+                Oke Cute, Yuk Coba Lagi! ✨
+            </button>
+        </div>
+    </div>
+
+    <!-- Top Navigation Bar Cute -->
+    <header class="w-full max-w-4xl mx-auto glass-card rounded-[28px] p-4 mb-4 flex justify-between items-center shadow-lg border-3 border-pink-200">
+        <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-pink-400 via-rose-300 to-purple-300 flex items-center justify-center text-2xl shadow-md text-white bounce-cute">
+                🎀
+            </div>
+            <div>
+                <h1 class="font-black text-lg md:text-xl text-pink-600 tracking-wide">
+                    Mini Lab Cute & Fun! 🍭
+                </h1>
+                <p class="text-[11px] text-purple-500 font-bold">Bermain Santai, Happy, & Tambah Pintar!</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2 md:gap-3">
+            <div class="bg-amber-100 px-3.5 py-1.5 rounded-2xl border-2 border-amber-300 flex items-center gap-1.5 text-xs font-black text-amber-700 shadow-sm">
+                <span>⭐</span>
+                <span id="star-count">0</span>
+            </div>
+            <div class="bg-emerald-100 px-3.5 py-1.5 rounded-2xl border-2 border-emerald-300 flex items-center gap-1.5 text-xs font-black text-emerald-700 shadow-sm">
+                <span>🏆</span>
+                <span id="exp-points">0 XP</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Game Workspace -->
+    <main class="w-full max-w-4xl mx-auto flex-grow flex flex-col justify-center">
+
+        <!-- SELECTOR MODULE SCREEN -->
+        <div id="module-select" class="grid grid-cols-1 md:grid-cols-3 gap-5 my-auto">
+            
+            <!-- Module 1: Eksperimen Pencampuran Warna Cahaya -->
+            <div onclick="startLabModule('color-lab')" class="glass-card rounded-[32px] p-6 cursor-pointer lab-element hover:border-pink-400 flex flex-col justify-between border-3 border-pink-200 bg-gradient-to-b from-white to-pink-50/50">
+                <div>
+                    <div class="w-14 h-14 rounded-2xl bg-pink-100 border-2 border-pink-300 text-pink-500 flex items-center justify-center text-3xl mb-3 shadow-inner">
+                        💡
+                    </div>
+                    <span class="text-[10px] font-black uppercase tracking-wider text-pink-600 bg-pink-200/80 px-3 py-1 rounded-full border border-pink-300">
+                        Super Fun ✨
+                    </span>
+                    <h3 class="text-xl font-black text-slate-800 mt-3 mb-1">Pencampur Cahaya RGB</h3>
+                    <p class="text-xs text-slate-500 leading-relaxed font-semibold">
+                        Nyalakan saklar warna pastel imut untuk membuat target warna cantik!
+                    </p>
+                </div>
+                <!-- Cute Fun Fact Preview Banner -->
+                <div class="mt-4 p-2.5 bg-rose-50 border border-rose-200 rounded-2xl text-[10px] text-rose-700 font-bold flex items-start gap-1.5">
+                    <span>🍓</span>
+                    <span><b>Fun Fact:</b> Cahaya HP-mu juga memakai sistem RGB ini lho!</span>
+                </div>
+                <div class="mt-4 flex justify-between items-center text-xs font-black text-pink-500">
+                    <span>Mulai Main Yuk!</span>
+                    <i class="fa-solid fa-heart text-pink-400 text-base"></i>
+                </div>
+            </div>
+
+            <!-- Module 2: Urutan Rantai Makanan -->
+            <div onclick="startLabModule('food-chain')" class="glass-card rounded-[32px] p-6 cursor-pointer lab-element hover:border-emerald-400 flex flex-col justify-between border-3 border-emerald-200 bg-gradient-to-b from-white to-emerald-50/50">
+                <div>
+                    <div class="w-14 h-14 rounded-2xl bg-emerald-100 border-2 border-emerald-300 text-emerald-600 flex items-center justify-center text-3xl mb-3 shadow-inner">
+                        🌱
+                    </div>
+                    <span class="text-[10px] font-black uppercase tracking-wider text-emerald-700 bg-emerald-200/80 px-3 py-1 rounded-full border border-emerald-300">
+                        Imut & Mudah 🍃
+                    </span>
+                    <h3 class="text-xl font-black text-slate-800 mt-3 mb-1">Petualangan Rantai Makanan</h3>
+                    <p class="text-xs text-slate-500 leading-relaxed font-semibold">
+                        Urutkan hewan dan tumbuhan lucu sesuai siklus makanan alaminya!
+                    </p>
+                </div>
+                <!-- Cute Fun Fact Preview Banner -->
+                <div class="mt-4 p-2.5 bg-emerald-50 border border-emerald-200 rounded-2xl text-[10px] text-emerald-800 font-bold flex items-start gap-1.5">
+                    <span>🍀</span>
+                    <span><b>Fun Fact:</b> Tanaman adalah koki alami pembuat makanan di Bumi!</span>
+                </div>
+                <div class="mt-4 flex justify-between items-center text-xs font-black text-emerald-600">
+                    <span>Mulai Main Yuk!</span>
+                    <i class="fa-solid fa-leaf text-emerald-400 text-base"></i>
+                </div>
+            </div>
+
+            <!-- Module 3: Kerapatan & Massa Jenis Zat -->
+            <div onclick="startLabModule('density-lab')" class="glass-card rounded-[32px] p-6 cursor-pointer lab-element hover:border-purple-400 flex flex-col justify-between border-3 border-purple-200 bg-gradient-to-b from-white to-purple-50/50">
+                <div>
+                    <div class="w-14 h-14 rounded-2xl bg-purple-100 border-2 border-purple-300 text-purple-600 flex items-center justify-center text-3xl mb-3 shadow-inner">
+                        🍯
+                    </div>
+                    <span class="text-[10px] font-black uppercase tracking-wider text-purple-700 bg-purple-200/80 px-3 py-1 rounded-full border border-purple-300">
+                        Visual Cantik 🦄
+                    </span>
+                    <h3 class="text-xl font-black text-slate-800 mt-3 mb-1">Menara Cairan Pelangi</h3>
+                    <p class="text-xs text-slate-500 leading-relaxed font-semibold">
+                        Tuang cairan warna-warni dari yang paling kental & berat ke yang paling ringan!
+                    </p>
+                </div>
+                <!-- Cute Fun Fact Preview Banner -->
+                <div class="mt-4 p-2.5 bg-purple-50 border border-purple-200 rounded-2xl text-[10px] text-purple-800 font-bold flex items-start gap-1.5">
+                    <span>🍯</span>
+                    <span><b>Fun Fact:</b> Madu tidak pernah basi walau disimpan ribuan tahun!</span>
+                </div>
+                <div class="mt-4 flex justify-between items-center text-xs font-black text-purple-600">
+                    <span>Mulai Main Yuk!</span>
+                    <i class="fa-solid fa-sparkles text-purple-400 text-base"></i>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- MODULE GAME WORKSPACE CONTAINER -->
+        <div id="game-workspace" class="hidden glass-card rounded-[36px] p-6 md:p-8 shadow-2xl relative border-4 border-pink-200">
+            
+            <button onclick="backToMenu()" class="absolute top-5 left-5 text-xs bg-pink-100 hover:bg-pink-200 text-pink-700 font-black px-4 py-2.5 rounded-2xl border-2 border-pink-300 flex items-center gap-2 transition cute-btn">
+                <i class="fa-solid fa-arrow-left"></i> Menu Utama 🌸
+            </button>
+
+            <!-- CONTAINER MODULE 1: RGB LIGHT EXPERIMENT -->
+            <div id="mod-color-lab" class="hidden pt-8">
+                <div class="text-center max-w-lg mx-auto mb-4">
+                    <h2 class="text-2xl md:text-3xl font-black text-pink-600 mb-1">Lampu Warna Pastel 💡✨</h2>
+                    <p class="text-xs text-slate-500 font-bold">Pencet saklar warna imut di bawah untuk buat warna target!</p>
+                </div>
+
+                <!-- Petunjuk Otomatis Setelah 3x Gagal -->
+                <div id="color-fail-clue" class="hidden bg-amber-50 border-3 border-amber-300 rounded-3xl p-4 max-w-md mx-auto mb-4 text-center text-xs text-amber-900 shadow-md animate-bounce">
+                    <div class="font-black text-amber-700 flex items-center justify-center gap-1.5 mb-1 text-sm">
+                        <span>🔑</span> Clue Bantuan Cute (Sudah 3x Coba):
+                    </div>
+                    <span id="color-clue-text" class="font-bold text-slate-700"></span>
+                </div>
+
+                <div class="flex flex-col md:flex-row items-center justify-around gap-6 my-5">
+                    <!-- Target Color Box -->
+                    <div class="text-center">
+                        <span class="text-xs font-black text-pink-400 block mb-2 uppercase tracking-wider">🎯 Warna Target:</span>
+                        <div id="target-color-box" class="w-32 h-32 rounded-[28px] border-4 border-white shadow-xl flex items-center justify-center transition-all duration-300 transform hover:scale-105">
+                            <span id="target-color-name" class="font-black text-xs bg-slate-900/80 text-white px-3 py-1.5 rounded-xl shadow">
+                                Cyan
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="text-2xl font-black text-pink-300 bounce-cute">💖</div>
+
+                    <!-- Current Light Mix Box -->
+                    <div class="text-center">
+                        <span class="text-xs font-black text-purple-400 block mb-2 uppercase tracking-wider">🎨 Hasil Lampumu:</span>
+                        <div id="mix-color-box" class="w-32 h-32 rounded-[28px] border-4 border-white shadow-xl transition-all duration-300 flex items-center justify-center transform hover:scale-105">
+                            <span id="mix-color-name" class="font-black text-xs bg-slate-900/80 text-white px-3 py-1.5 rounded-xl shadow">Hitam</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Switches Control -->
+                <div class="grid grid-cols-3 gap-3.5 max-w-md mx-auto mb-6">
+                    <button id="btn-r" onclick="toggleLight('r')" class="p-3.5 bg-rose-100 border-3 border-rose-300 hover:bg-rose-200 rounded-2xl flex flex-col items-center gap-1.5 transition opacity-60 shadow-sm cute-btn">
+                        <span class="text-3xl">🔴</span>
+                        <span class="text-xs font-black text-rose-800">Merah (Red)</span>
+                    </button>
+                    <button id="btn-g" onclick="toggleLight('g')" class="p-3.5 bg-emerald-100 border-3 border-emerald-300 hover:bg-emerald-200 rounded-2xl flex flex-col items-center gap-1.5 transition opacity-60 shadow-sm cute-btn">
+                        <span class="text-3xl">🟢</span>
+                        <span class="text-xs font-black text-emerald-800">Hijau (Green)</span>
+                    </button>
+                    <button id="btn-b" onclick="toggleLight('b')" class="p-3.5 bg-sky-100 border-3 border-sky-300 hover:bg-sky-200 rounded-2xl flex flex-col items-center gap-1.5 transition opacity-60 shadow-sm cute-btn">
+                        <span class="text-3xl">🔵</span>
+                        <span class="text-xs font-black text-sky-800">Biru (Blue)</span>
+                    </button>
+                </div>
+
+                <!-- Button periksa warna -->
+                <div class="text-center mb-5">
+                    <button onclick="checkColorAnswer()" class="px-8 py-3 bg-gradient-to-r from-pink-400 to-purple-400 hover:from-pink-500 hover:to-purple-500 text-white font-black text-xs rounded-2xl shadow-lg shadow-pink-300/60 cute-btn">
+                        ✨ Cocokkan Warna Cantik Ini! ✨
+                    </button>
+                </div>
+
+                <!-- Concept Knowledge & Cute Fun Fact Box -->
+                <div id="color-edu-fact" class="hidden bg-pink-50 border-3 border-pink-300 rounded-3xl p-5 text-xs leading-relaxed text-pink-900 max-w-md mx-auto shadow-md">
+                    <div class="font-black text-sm mb-2 text-pink-600 flex items-center gap-2">
+                        <span>🧠</span> Konsep Edukatif Cahaya:
+                    </div>
+                    <p id="color-edu-text" class="font-bold text-slate-700 mb-3"></p>
+                    
+                    <!-- FUN FACT EXTRA BOX -->
+                    <div class="bg-white/80 p-3 rounded-2xl border-2 border-pink-200 text-[11px] font-extrabold text-purple-800 mb-3 flex items-start gap-2">
+                        <span class="text-base">🍓</span>
+                        <div>
+                            <span class="text-pink-600 block mb-0.5">FUN FACT UNIK CAHAYA:</span>
+                            <span id="color-fun-fact"></span>
+                        </div>
+                    </div>
+
+                    <button onclick="initColorLab()" class="w-full py-2.5 bg-pink-500 hover:bg-pink-600 text-white rounded-2xl font-black text-xs shadow-md cute-btn">
+                        Lanjut Warna Berikutnya! 🎨
+                    </button>
+                </div>
+            </div>
+
+            <!-- CONTAINER MODULE 2: FOOD CHAIN BUILDER -->
+            <div id="mod-food-chain" class="hidden pt-8">
+                <div class="text-center max-w-lg mx-auto mb-4">
+                    <h2 class="text-2xl md:text-3xl font-black text-emerald-600 mb-1">Rantai Makanan Imut 🌱</h2>
+                    <p class="text-xs text-slate-500 font-bold">Pilih urutan sahabat alam dari nomor 1 sampai 3!</p>
+                </div>
+
+                <!-- Petunjuk Otomatis Setelah 3x Gagal -->
+                <div id="chain-fail-clue" class="hidden bg-amber-50 border-3 border-amber-300 rounded-3xl p-4 max-w-md mx-auto mb-4 text-center text-xs text-amber-900 shadow-md animate-bounce">
+                    <div class="font-black text-amber-700 flex items-center justify-center gap-1.5 mb-1 text-sm">
+                        <span>🔑</span> Clue Bantuan Rantai Makanan:
+                    </div>
+                    <span id="chain-clue-text" class="font-bold text-slate-700">Urutan pasti: Rumput/Padi -> Belalang -> Katak/Burung</span>
+                </div>
+
+                <!-- Slot Rantai Makanan -->
+                <div id="chain-slots" class="grid grid-cols-3 gap-3 mb-6 max-w-lg mx-auto">
+                    <!-- Slot Cards injected by JS -->
+                </div>
+
+                <!-- Available Organisms Pool -->
+                <div class="bg-emerald-50/80 rounded-3xl p-5 border-3 border-emerald-200 max-w-lg mx-auto shadow-inner">
+                    <span class="text-xs font-black text-emerald-700 block mb-3 uppercase tracking-wider text-center">👇 Pilih Sahabat Organisme Berikutnya:</span>
+                    <div id="organisms-pool" class="flex flex-wrap gap-2.5 justify-center">
+                        <!-- Organism buttons injected by JS -->
+                    </div>
+                </div>
+
+                <!-- Concept Knowledge & Cute Fun Fact Box -->
+                <div id="chain-edu-fact" class="hidden mt-6 bg-emerald-50 border-3 border-emerald-300 rounded-3xl p-5 text-xs leading-relaxed text-emerald-900 max-w-lg mx-auto shadow-md">
+                    <div class="font-black text-sm mb-2 text-emerald-600 flex items-center gap-2">
+                        <span>🌿</span> Konsep Ekosistem Alam:
+                    </div>
+                    <p id="chain-edu-text" class="font-bold text-slate-700 mb-3"></p>
+
+                    <!-- FUN FACT EXTRA BOX -->
+                    <div class="bg-white/80 p-3 rounded-2xl border-2 border-emerald-200 text-[11px] font-extrabold text-emerald-800 mb-3 flex items-start gap-2">
+                        <span class="text-base">🍀</span>
+                        <div>
+                            <span class="text-emerald-600 block mb-0.5">FUN FACT UNIK ALAM:</span>
+                            <span id="chain-fun-fact"></span>
+                        </div>
+                    </div>
+
+                    <button onclick="initFoodChain()" class="w-full py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl font-black text-xs shadow-md cute-btn">
+                        Mainkan Tantangan Lainnya! 🌱
+                    </button>
+                </div>
+            </div>
+
+            <!-- CONTAINER MODULE 3: DENSITY TOWER -->
+            <div id="mod-density-lab" class="hidden pt-8">
+                <div class="text-center max-w-lg mx-auto mb-4">
+                    <h2 class="text-2xl md:text-3xl font-black text-purple-600 mb-1">Menara Cairan Pelangi 🧪</h2>
+                    <p class="text-xs text-slate-500 font-bold">Isi cairan dari yang **paling berat/kental (bawah)** ke yang paling ringan!</p>
+                </div>
+
+                <!-- Petunjuk Otomatis Setelah 3x Gagal -->
+                <div id="density-fail-clue" class="hidden bg-amber-50 border-3 border-amber-300 rounded-3xl p-4 max-w-md mx-auto mb-4 text-center text-xs text-amber-900 shadow-md animate-bounce">
+                    <div class="font-black text-amber-700 flex items-center justify-center gap-1.5 mb-1 text-sm">
+                        <span>🔑</span> Clue Bantuan Menara Kerapatan:
+                    </div>
+                    <span id="density-clue-text" class="font-bold text-slate-700">Urutan penuangan dari dasar: Madu (Paling Berat) -> Air Murni -> Minyak Goreng (Ringan)</span>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center mb-6">
+                    <!-- Beaker Representation Cute -->
+                    <div class="bg-pink-50/80 border-4 border-pink-300 rounded-[32px] p-3.5 flex flex-col-reverse gap-2 h-64 w-full max-w-xs mx-auto shadow-inner relative overflow-hidden">
+                        <div id="density-layer-1" class="h-1/3 rounded-2xl border-2 border-dashed border-pink-200 flex items-center justify-center font-black text-xs bg-white text-slate-400 transition-all">
+                            1. Lapisan Bawah (Paling Berat)
+                        </div>
+                        <div id="density-layer-2" class="h-1/3 rounded-2xl border-2 border-dashed border-pink-200 flex items-center justify-center font-black text-xs bg-white text-slate-400 transition-all">
+                            2. Lapisan Tengah
+                        </div>
+                        <div id="density-layer-3" class="h-1/3 rounded-2xl border-2 border-dashed border-pink-200 flex items-center justify-center font-black text-xs bg-white text-slate-400 transition-all">
+                            3. Lapisan Atas (Paling Ringan)
+                        </div>
+                    </div>
+
+                    <!-- Options list -->
+                    <div class="flex flex-col gap-2.5">
+                        <span id="density-instruction" class="text-xs font-black text-purple-700 uppercase">Pilih Cairan Lapisan 1 (Paling Berat):</span>
+                        <div id="liquid-options" class="flex flex-col gap-2">
+                            <!-- Liquids injected by JS -->
+                        </div>
+                        <button onclick="resetDensityLab()" class="mt-2 text-xs bg-purple-100 hover:bg-purple-200 text-purple-800 font-black py-3 rounded-2xl transition border-2 border-purple-200 cute-btn">
+                            🔄 Ulangi Isi Dari Awal
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Concept Knowledge & Cute Fun Fact Box -->
+                <div id="density-edu-fact" class="hidden bg-purple-50 border-3 border-purple-300 rounded-3xl p-5 text-xs leading-relaxed text-purple-900 shadow-md">
+                    <div class="font-black text-sm mb-2 text-purple-600 flex items-center gap-2">
+                        <span>🔮</span> Konsep Fisika & Massa Jenis:
+                    </div>
+                    <p id="density-edu-text" class="font-bold text-slate-700 mb-3"></p>
+
+                    <!-- FUN FACT EXTRA BOX -->
+                    <div class="bg-white/80 p-3 rounded-2xl border-2 border-purple-200 text-[11px] font-extrabold text-purple-800 mb-3 flex items-start gap-2">
+                        <span class="text-base">🦄</span>
+                        <div>
+                            <span class="text-purple-600 block mb-0.5">FUN FACT UNIK CAIRAN:</span>
+                            <span id="density-fun-fact"></span>
+                        </div>
+                    </div>
+
+                    <button onclick="initDensityLab()" class="w-full py-2.5 bg-purple-500 hover:bg-purple-600 text-white rounded-2xl font-black text-xs shadow-md cute-btn">
+                        Eksperimen Ulang! 🧪
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Footer Cute -->
+    <footer class="w-full max-w-4xl mx-auto text-center text-xs text-pink-600/90 font-extrabold py-4">
+        Mini Game Edukatif Cute & Pastel &copy; 2026 - Bermain Happy & Tambah Pintar! ✨🌸
+    </footer>
+
+    <!-- Audio Synth Logic & Game Script -->
+    <script>
+        // Custom Modal Function Cute
+        function showModal(title, message, icon = '💖') {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-msg').innerText = message;
+            document.getElementById('modal-icon').innerText = icon;
+            document.getElementById('custom-modal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('custom-modal').classList.add('hidden');
+        }
+
+        // Sound Audio Context
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'pop') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(550, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(950, audioCtx.currentTime + 0.08);
+                gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.08);
+            } else if (type === 'success') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
+                osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1);
+                osc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.2);
+                osc.frequency.setValueAtTime(1046.50, audioCtx.currentTime + 0.3);
+                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.4);
+            } else if (type === 'fail') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(260, audioCtx.currentTime);
+                osc.frequency.setValueAtTime(190, audioCtx.currentTime + 0.15);
+                gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.3);
+            }
+        }
+
+        // Global State & Fail Counters
+        let stars = 0;
+        let exp = 0;
+        let currentActiveModule = '';
+        
+        let colorFailCount = 0;
+        let chainFailCount = 0;
+        let densityFailCount = 0;
+
+        function addScore(points, starCount = 1) {
+            stars += starCount;
+            exp += points;
+            document.getElementById('star-count').innerText = stars;
+            document.getElementById('exp-points').innerText = `${exp} XP`;
+            if (typeof confetti === 'function') {
+                confetti({ 
+                    particleCount: 60, 
+                    spread: 70, 
+                    origin: { y: 0.7 },
+                    colors: ['#f472b6', '#38bdf8', '#fbbf24', '#c084fc', '#34d399']
+                });
+            }
+        }
+
+        function backToMenu() {
+            playSound('pop');
+            document.getElementById('game-workspace').classList.add('hidden');
+            document.getElementById('module-select').classList.remove('hidden');
+        }
+
+        function startLabModule(modName) {
+            playSound('pop');
+            currentActiveModule = modName;
+            document.getElementById('module-select').classList.add('hidden');
+            document.getElementById('game-workspace').classList.remove('hidden');
+
+            document.getElementById('mod-color-lab').classList.add('hidden');
+            document.getElementById('mod-food-chain').classList.add('hidden');
+            document.getElementById('mod-density-lab').classList.add('hidden');
+
+            if (modName === 'color-lab') {
+                document.getElementById('mod-color-lab').classList.remove('hidden');
+                initColorLab();
+            } else if (modName === 'food-chain') {
+                document.getElementById('mod-food-chain').classList.remove('hidden');
+                initFoodChain();
+            } else if (modName === 'density-lab') {
+                document.getElementById('mod-density-lab').classList.remove('hidden');
+                initDensityLab();
+            }
+        }
+
+        // ==========================================
+        // MODULE 1: COLOR LAB LOGIC + FUN FACTS
+        // ==========================================
+        const colorTargets = [
+            { 
+                name: 'Yellow (Kuning Cute)', 
+                r: true, g: true, b: false, 
+                colorCode: '#facc15', 
+                clue: 'Nyalakan saklar Merah 🔴 DAN Saklar Hijau 🟢! Saklar Biru biarkan mati ya.',
+                edu: 'Cahaya Merah + Hijau menghasilkan warna Kuning terang pada teori pencampuran warna cahaya (RGB)!',
+                funFact: 'Tahu nggak? Cahaya matahari asli sebenarnya adalah gabungan semua warna pelangi yang menyatu!'
+            },
+            { 
+                name: 'Cyan (Sian Mint)', 
+                r: false, g: true, b: true, 
+                colorCode: '#22d3ee', 
+                clue: 'Nyalakan saklar Hijau 🟢 DAN Saklar Biru 🔵! Saklar Merah biarkan mati ya.',
+                edu: 'Pencampuran spektrum warna Hijau dan Biru membentuk warna Sian (Cyan) yang sangat segar!',
+                funFact: 'Layar smartphone atau TV kamu mengandung jutaan piksel lampu kecil Red, Green, dan Blue!'
+            },
+            { 
+                name: 'Magenta (Merah Muda)', 
+                r: true, g: false, b: true, 
+                colorCode: '#e879f9', 
+                clue: 'Nyalakan saklar Merah 🔴 DAN Saklar Biru 🔵! Saklar Hijau biarkan mati ya.',
+                edu: 'Cahaya Merah yang dipadukan dengan Cahaya Biru menghasilkan warna Magenta pastel super cute!',
+                funFact: 'Warna Magenta secara ilmiah sebenarnya tidak ada di panjang gelombang spektrum pelangi, melainkan trik otak kita!'
+            },
+            { 
+                name: 'White (Putih Murni)', 
+                r: true, g: true, b: true, 
+                colorCode: '#ffffff', 
+                clue: 'Nyalakan SEMUA saklar (Merah + Hijau + Biru) secara bersamaan! ✨',
+                edu: 'Ketika ketiga warna primer cahaya (RGB) digabungkan bersatu, mereka membentuk Cahaya Putih!',
+                funFact: 'Pelangi di langit terjadi karena tetesan air hujan membiaskan cahaya putih matahari menjadi warna-warninya!'
+            }
+        ];
+
+        let activeR = false, activeG = false, activeB = false;
+        let currentTargetIndex = -1;
+
+        function initColorLab() {
+            activeR = false; activeG = false; activeB = false;
+            currentTargetIndex = (currentTargetIndex + 1) % colorTargets.length;
+            const target = colorTargets[currentTargetIndex];
+            
+            document.getElementById('target-color-box').style.backgroundColor = target.colorCode;
+            document.getElementById('target-color-name').innerText = target.name;
+            document.getElementById('color-edu-fact').classList.add('hidden');
+
+            if (colorFailCount < 3) {
+                document.getElementById('color-fail-clue').classList.add('hidden');
+            } else {
+                updateColorClueUI();
+            }
+
+            document.getElementById('btn-r').style.opacity = '0.6';
+            document.getElementById('btn-g').style.opacity = '0.6';
+            document.getElementById('btn-b').style.opacity = '0.6';
+
+            updateMixBox();
+        }
+
+        function toggleLight(type) {
+            playSound('pop');
+            if (type === 'r') activeR = !activeR;
+            if (type === 'g') activeG = !activeG;
+            if (type === 'b') activeB = !activeB;
+
+            document.getElementById('btn-r').style.opacity = activeR ? '1' : '0.6';
+            document.getElementById('btn-g').style.opacity = activeG ? '1' : '0.6';
+            document.getElementById('btn-b').style.opacity = activeB ? '1' : '0.6';
+
+            updateMixBox();
+        }
+
+        function updateMixBox() {
+            const mixBox = document.getElementById('mix-color-box');
+            const mixName = document.getElementById('mix-color-name');
+
+            let rVal = activeR ? 255 : 0;
+            let gVal = activeG ? 255 : 0;
+            let bVal = activeB ? 255 : 0;
+
+            mixBox.style.backgroundColor = `rgb(${rVal}, ${gVal}, ${bVal})`;
+
+            let currentName = 'Hitam (Gelap)';
+            if (activeR && !activeG && !activeB) currentName = 'Merah';
+            else if (!activeR && activeG && !activeB) currentName = 'Hijau';
+            else if (!activeR && !activeG && activeB) currentName = 'Biru';
+            else if (activeR && activeG && !activeB) currentName = 'Yellow (Kuning)';
+            else if (!activeR && activeG && activeB) currentName = 'Cyan (Sian)';
+            else if (activeR && !activeG && activeB) currentName = 'Magenta';
+            else if (activeR && activeG && activeB) currentName = 'White (Putih)';
+
+            mixName.innerText = currentName;
+        }
+
+        function checkColorAnswer() {
+            const target = colorTargets[currentTargetIndex];
+            if (activeR === target.r && activeG === target.g && activeB === target.b) {
+                playSound('success');
+                addScore(150, 1);
+                colorFailCount = 0;
+                document.getElementById('color-fail-clue').classList.add('hidden');
+                document.getElementById('color-edu-text').innerText = target.edu;
+                document.getElementById('color-fun-fact').innerText = target.funFact;
+                document.getElementById('color-edu-fact').classList.remove('hidden');
+            } else {
+                playSound('fail');
+                colorFailCount++;
+                if (colorFailCount >= 3) {
+                    updateColorClueUI();
+                    showModal('Petunjuk Clue Bantuan Terbuka! 🔑', `Kamu sudah mencoba 3x. Cek kotak Clue di atas untuk jawaban saklar warnanya ya!`, '✨');
+                } else {
+                    showModal('Warna Belum Cocok Nih', `Campuran warna lampumu belum pas dengan target. Coba gabungkan saklar lainnya! (Coba: ${colorFailCount}/3)`, '🎨');
+                }
+            }
+        }
+
+        function updateColorClueUI() {
+            const target = colorTargets[currentTargetIndex];
+            document.getElementById('color-clue-text').innerText = target.clue;
+            document.getElementById('color-fail-clue').classList.remove('hidden');
+        }
+
+        // ==========================================
+        // MODULE 2: FOOD CHAIN LOGIC + FUN FACTS
+        // ==========================================
+        const chainData = {
+            title: 'Rantai Makanan Ekosistem Sawah',
+            edu: 'Urutan aliran energi alam yang tepat: Tumbuhan Rumput/Padi (Produsen Makanan) -> Belalang (Konsumen Makanan I) -> Katak (Konsumen Makanan II).',
+            funFact: 'Pohon dan rumput disebut Produsen karena mereka bisa memasak makanannya sendiri menggunakan bantuan sinar matahari (Fotosintesis)!',
+            steps: [
+                { role: '1. Produsen Utama', name: 'Padi / Rumput 🌾', icon: 'fa-seedling' },
+                { role: '2. Konsumen I', name: 'Belalang Imut 🦗', icon: 'fa-bug' },
+                { role: '3. Konsumen II', name: 'Katak Sawah 🐸', icon: 'fa-frog' }
+            ]
+        };
+
+        let currentChainSelection = [];
+
+        function initFoodChain() {
+            currentChainSelection = [];
+            document.getElementById('chain-edu-fact').classList.add('hidden');
+
+            if (chainFailCount < 3) {
+                document.getElementById('chain-fail-clue').classList.add('hidden');
+            } else {
+                document.getElementById('chain-fail-clue').classList.remove('hidden');
+            }
+
+            renderChainSlots();
+            renderOrganismsPool();
+        }
+
+        function renderChainSlots() {
+            const container = document.getElementById('chain-slots');
+            container.innerHTML = '';
+
+            chainData.steps.forEach((step, idx) => {
+                const filled = currentChainSelection[idx];
+                const card = document.createElement('div');
+                card.className = `bg-white border-3 ${filled ? 'border-emerald-400 bg-emerald-50/80' : 'border-pink-200'} rounded-3xl p-3 text-center flex flex-col items-center justify-center min-h-[100px] transition shadow-sm`;
+                
+                if (filled) {
+                    card.innerHTML = `
+                        <i class="fa-solid ${filled.icon} text-2xl text-emerald-500 mb-1"></i>
+                        <span class="text-xs font-black text-slate-800">${filled.name}</span>
+                        <span class="text-[9px] text-emerald-600 font-extrabold uppercase mt-0.5">${step.role}</span>
+                    `;
+                } else {
+                    card.innerHTML = `
+                        <div class="w-8 h-8 rounded-full border-2 border-dashed border-pink-300 flex items-center justify-center text-pink-400 text-xs mb-1 font-black">
+                            ${idx + 1}
+                        </div>
+                        <span class="text-[10px] text-slate-400 font-bold">${step.role}</span>
+                    `;
+                }
+                container.appendChild(card);
+            });
+        }
+
+        function renderOrganismsPool() {
+            const container = document.getElementById('organisms-pool');
+            container.innerHTML = '';
+
+            chainData.steps.forEach(org => {
+                const isSelected = currentChainSelection.some(item => item.name === org.name);
+                if (isSelected) return;
+
+                const btn = document.createElement('button');
+                btn.className = 'bg-white hover:bg-emerald-100 border-3 border-emerald-200 rounded-2xl px-4 py-3 text-xs font-black text-emerald-900 flex items-center gap-2 transition shadow-sm cute-btn';
+                btn.onclick = () => selectOrganism(org);
+                btn.innerHTML = `
+                    <i class="fa-solid ${org.icon} text-emerald-500 text-sm"></i>
+                    <span>${org.name}</span>
+                `;
+                container.appendChild(btn);
+            });
+        }
+
+        function selectOrganism(org) {
+            playSound('pop');
+            currentChainSelection.push(org);
+            renderChainSlots();
+            renderOrganismsPool();
+
+            if (currentChainSelection.length === chainData.steps.length) {
+                let isCorrect = true;
+                for (let i = 0; i < chainData.steps.length; i++) {
+                    if (currentChainSelection[i].name !== chainData.steps[i].name) {
+                        isCorrect = false;
+                        break;
+                    }
+                }
+
+                if (isCorrect) {
+                    playSound('success');
+                    addScore(200, 1);
+                    chainFailCount = 0;
+                    document.getElementById('chain-fail-clue').classList.add('hidden');
+                    document.getElementById('chain-edu-text').innerText = chainData.edu;
+                    document.getElementById('chain-fun-fact').innerText = chainData.funFact;
+                    document.getElementById('chain-edu-fact').classList.remove('hidden');
+                } else {
+                    playSound('fail');
+                    chainFailCount++;
+                    if (chainFailCount >= 3) {
+                        document.getElementById('chain-fail-clue').classList.remove('hidden');
+                    }
+                    setTimeout(() => {
+                        showModal('Urutan Belum Tepat Yuk!', `Mulai dari tanaman hijau (Produsen) dulu ya! (Coba: ${chainFailCount}/3)`, '🌱');
+                        initFoodChain();
+                    }, 300);
+                }
+            }
+        }
+
+        // ==========================================
+        // MODULE 3: DENSITY LAB LOGIC + FUN FACTS
+        // ==========================================
+        const liquidsData = [
+            { id: 'honey', name: 'Madu Murni 🍯', label: 'Madu Murni (Sangat Kental & Berat)', color: '#f59e0b', density: 3 },
+            { id: 'water', name: 'Air Murni 💧', label: 'Air Murni (Sedang)', color: '#38bdf8', density: 2 },
+            { id: 'oil', name: 'Minyak Goreng 🌻', label: 'Minyak Goreng (Paling Ringan)', color: '#facc15', density: 1 }
+        ];
+
+        let selectedDensityLayers = [];
+
+        function initDensityLab() {
+            selectedDensityLayers = [];
+            document.getElementById('density-edu-fact').classList.add('hidden');
+
+            if (densityFailCount < 3) {
+                document.getElementById('density-fail-clue').classList.add('hidden');
+            } else {
+                document.getElementById('density-fail-clue').classList.remove('hidden');
+            }
+
+            document.getElementById('density-layer-1').style.backgroundColor = '#ffffff';
+            document.getElementById('density-layer-1').innerText = '1. Lapisan Bawah (Paling Berat)';
+            
+            document.getElementById('density-layer-2').style.backgroundColor = '#ffffff';
+            document.getElementById('density-layer-2').innerText = '2. Lapisan Tengah';
+
+            document.getElementById('density-layer-3').style.backgroundColor = '#ffffff';
+            document.getElementById('density-layer-3').innerText = '3. Lapisan Atas (Paling Ringan)';
+
+            updateDensityInstruction();
+            renderDensityOptions();
+        }
+
+        function updateDensityInstruction() {
+            const instr = document.getElementById('density-instruction');
+            if (selectedDensityLayers.length === 0) {
+                instr.innerText = 'Pilih Cairan Lapisan 1 (Paling Berat/Kental):';
+            } else if (selectedDensityLayers.length === 1) {
+                instr.innerText = 'Pilih Cairan Lapisan 2 (Sedang):';
+            } else if (selectedDensityLayers.length === 2) {
+                instr.innerText = 'Pilih Cairan Lapisan 3 (Paling Ringan):';
+            }
+        }
+
+        function renderDensityOptions() {
+            const container = document.getElementById('liquid-options');
+            container.innerHTML = '';
+
+            liquidsData.forEach(liq => {
+                const isSelected = selectedDensityLayers.some(l => l.id === liq.id);
+                if (isSelected) return;
+
+                const btn = document.createElement('button');
+                btn.className = 'w-full bg-white hover:bg-purple-100 border-3 border-purple-200 p-3.5 rounded-2xl text-xs font-black text-purple-900 text-left flex items-center justify-between transition shadow-sm cute-btn';
+                btn.onclick = () => addDensityLayer(liq);
+                btn.innerHTML = `
+                    <span>${liq.label}</span>
+                    <span class="w-5 h-5 rounded-full shadow border-2 border-white" style="background-color: ${liq.color}"></span>
+                `;
+                container.appendChild(btn);
+            });
+        }
+
+        function addDensityLayer(liq) {
+            playSound('pop');
+            selectedDensityLayers.push(liq);
+
+            const layerIndex = selectedDensityLayers.length;
+            const layerEl = document.getElementById(`density-layer-${layerIndex}`);
+            layerEl.style.backgroundColor = liq.color;
+            layerEl.innerText = liq.name;
+
+            updateDensityInstruction();
+            renderDensityOptions();
+
+            if (selectedDensityLayers.length === 3) {
+                const isCorrect = (selectedDensityLayers[0].density === 3) && 
+                                  (selectedDensityLayers[1].density === 2) && 
+                                  (selectedDensityLayers[2].density === 1);
+
+                if (isCorrect) {
+                    playSound('success');
+                    addScore(200, 1);
+                    densityFailCount = 0;
+                    document.getElementById('density-fail-clue').classList.add('hidden');
+                    document.getElementById('density-edu-text').innerText = 'Luar Biasa! Cairan paling kental & berat (Madu) berada di dasar bawah, Air Murni di tengah, dan Minyak Goreng terapung indah di lapisan paling atas!';
+                    document.getElementById('density-fun-fact').innerText = 'Madu tidak basi dan tidak bercampur dengan minyak karena kerapatan molekul madu jauh lebih rapat dan berat!';
+                    document.getElementById('density-edu-fact').classList.remove('hidden');
+                } else {
+                    playSound('fail');
+                    densityFailCount++;
+                    if (densityFailCount >= 3) {
+                        document.getElementById('density-fail-clue').classList.remove('hidden');
+                    }
+                    setTimeout(() => {
+                        showModal('Susunan Belum Pas', `Ingat: Isikan cairan paling kental & berat (Madu) di dasar dulu ya! (Coba: ${densityFailCount}/3)`, '🧪');
+                        initDensityLab();
+                    }, 300);
+                }
+            }
+        }
+
+        function resetDensityLab() {
+            playSound('pop');
+            initDensityLab();
+        }
+    </script>
+</body>
+</html>
